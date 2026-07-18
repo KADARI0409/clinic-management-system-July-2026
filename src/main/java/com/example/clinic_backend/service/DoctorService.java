@@ -1,6 +1,7 @@
 package com.example.clinic_backend.service;
 
 import java.util.List;
+import org.slf4j.*;
 
 import org.springframework.http.HttpStatus;
 
@@ -14,15 +15,19 @@ import com.example.clinic_backend.dto.LoginRequest;
 import com.example.clinic_backend.dto.LoginResponse;
 import com.example.clinic_backend.entity.Doctor;
 import com.example.clinic_backend.repository.DoctorRepository;
+import com.example.clinic_backend.security.JwtService;
 
 @Service
 public class DoctorService {
     private final DoctorRepository doctorRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
+    private static final Logger logger = LoggerFactory.getLogger(DoctorService.class);
 
-    public DoctorService(DoctorRepository doctorRepository, PasswordEncoder passwordEncoder) {
+    public DoctorService(DoctorRepository doctorRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.doctorRepository = doctorRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public Doctor createDoctor(DoctorSignupRequest request) {
@@ -48,14 +53,12 @@ public class DoctorService {
     public LoginResponse login(LoginRequest request) {
         Doctor doctor = doctorRepository.findByUserId(request.getUserId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invalid User ID"));
-        // if (!doctor.getPassword().equals(request.getPassword())) {
-        // throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid
-        // Password");
-        // }
+
         if (!passwordEncoder.matches(request.getPassword(), doctor.getPassword())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid Password");
         }
-        return new LoginResponse("Login Successfully");
+        String token = jwtService.generateToken(doctor.getUserId());
+        return new LoginResponse("Login Successfully", token);
     }
 
     public void deleteDoctor(Long id) {
