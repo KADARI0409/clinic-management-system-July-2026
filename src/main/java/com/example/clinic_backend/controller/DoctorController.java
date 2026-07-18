@@ -37,6 +37,7 @@ public class DoctorController {
 
     @PostMapping
     public ResponseEntity<Doctor> createDoctor(@Valid @RequestBody DoctorSignupRequest request) {
+        System.out.println("Signup API called");
         Doctor savedDoctor = doctorService.createDoctor(request);
         return new ResponseEntity<>(savedDoctor, HttpStatus.CREATED);
     }
