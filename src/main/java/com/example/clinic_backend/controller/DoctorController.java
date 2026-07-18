@@ -48,4 +48,9 @@ public class DoctorController {
         return doctorService.getAllDoctors();
     }
 
+    @GetMapping("/{userId}")
+    public ResponseEntity<Doctor> getDoctorByUserId(@PathVariable String userId) {
+        Doctor doctor = doctorService.getDoctorByUserId(userId);
+        return ResponseEntity.ok(doctor);
+    }
 }
